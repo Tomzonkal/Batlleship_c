@@ -1,0 +1,471 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+
+// odkomentowanie lini 403,404,420 wl¹czy grê ,zakomentowanie == komputer wygra
+// pierwsza wyswietlona tablica to tablica wroga(przyspiesza sprawdzanie)
+// odleglosc miedzy statkami wynosi minimum 1 pole 
+// trafienie oznaczone jest cyfra 1,3,5 wartosc zalezy w jaki statek strzelimy
+// trafienie przez komputer jest sygnalizowane "X" na naszej planszy
+
+/*
+spis funkcji:
+	test-sprawdza czy dane pole jest puste 
+
+	losowanie-losuje wspolrzedne statków
+
+	lostest- sprawdza czy losowany punkt jest poprawny , czy caly statek nie zajmie czyjegos miejsca
+
+	ustawianie - ustawia statki
+
+	koniec - sprawdza czy ktos wygral(warunek konca gry)
+
+	strzel - komendy zajmuj¹ce sie analiz¹ wspó³rzednych
+
+	wyswietl - wyswietla plansze
+
+	uzupelnienie - wype³nia plansze wartosciami zerowymi i granicznymi
+
+	rozgrywka - steruje rozgrywka
+
+
+
+
+*/
+int test(int tab[12][12], int x, int y)
+{
+	for (int i = 0; i < 10; i++)
+	{
+		if (tab[x][y]==0)
+			return 1;
+	}
+	return 0;
+}
+
+int losowanie(int poziom,int statek,int lub)
+{
+	
+	int pkt = rand() % 11;
+	while (1) {
+		int pkt = rand() % 11 + 1;
+
+		if (poziom==0) 
+		{
+
+			if(lub==0)
+			{
+				if ((pkt + (statek % 2)) < 10 && (pkt - (statek % 2) )> 1)
+					return pkt;
+			}
+			if(lub==1&&pkt<11) return pkt;
+			
+			
+		}
+		if(poziom==1)
+		{
+			if(lub==1)
+			{
+				if (pkt + (statek % 2) < 10 && pkt - (statek % 2) > 0)
+					return pkt;
+			}
+			if(lub==0&&pkt<11) return pkt;
+		}
+	}
+	
+	
+}
+
+int lostest(int tab[12][12], int x, int y, int statek, int poziom)
+{
+	if (poziom == 0)
+	{
+		if(statek==1)
+		{
+			if (tab[x][y] != 0)
+				return 1;
+		}
+		if (statek == 3)
+		{
+			if (tab[x][y] != 0 || tab[x][y - 1] != 0 || tab[x][y + 1] != 0)
+				return 1;
+		}
+		if (statek == 5)
+		{
+			if (tab[x][y] != 0 || tab[x][y - 1] != 0 || tab[x][y + 1] != 0 || tab[x][y + 2] != 0 || tab[x][y - 2] != 0)
+				return 1;
+		}
+	}
+	if (poziom == 1)
+	{
+		if (statek == 1)
+		{
+			if (tab[x][y] != 0)
+				return 1;
+		}
+		if (statek == 3)
+		{
+			if (tab[x][y] != 0 || tab[x-1][y] != 0 || tab[x+1][y] != 0)
+				return 1;
+		}
+		if (statek == 5)
+		{
+			if (tab[x][y] != 0 || tab[x - 1][y] != 0 || tab[x + 1][y] != 0 || tab[x + 2][y] != 0 || tab[x - 2][y] != 0)
+				return 1;
+		}
+	}
+
+
+	return 0;
+
+}
+
+void ustawianie ( int tab[12][12])
+{
+	int x, y;
+	
+	int statek = 5;
+	
+	for (int i = 0; i < 6; i ++)
+	{
+		int poziom = rand() % 2;
+		if (i == 0 || i == 1 || i == 4)
+			statek = 1;
+
+		if (i == 3 || i == 2 )
+			statek = 3;
+
+		if (i == 5)
+			statek = 5;
+		do {
+			x = losowanie(poziom, i, 1);
+			y = losowanie(poziom, i, 0);
+		} while (lostest(tab, x, y, statek, poziom));
+
+		if (poziom == 0)
+		{
+			if (statek == 5)
+			{
+
+				if (test(tab, x - 1, y - 1))    tab[x - 1][y - 1] = 11;
+				if (test(tab, x - 1, y + 1))	tab[x - 1][y + 1] = 11;
+				if (test(tab, x - 1, y - 2))	tab[x - 1][y - 2] = 11;
+				if (test(tab, x - 1, y + 2))	tab[x - 1][y + 2] = 11;
+				if (test(tab, x - 1, y ))		tab[x - 1][y] = 11;
+
+				if (test(tab, x + 1, y - 1))	tab[x + 1][y - 1] = 11;
+				if (test(tab, x + 1, y + 1))	tab[x + 1][y + 1] = 11;
+				if (test(tab, x + 1, y - 2))	tab[x + 1][y - 2] = 11;
+				if (test(tab, x + 1, y + 2))	tab[x + 1][y + 2] = 11;
+				if (test(tab, x + 1, y ))		tab[x + 1][y] = 11;
+				if (test(tab, x - 1, y - 3))	tab[x - 1][y - 3] = 11;
+				if (test(tab, x - 1, y + 3))	tab[x - 1][y + 3] = 11;
+				if (test(tab, x , y - 3))		tab[x][y - 3] = 11;
+				if (test(tab, x , y + 3))		tab[x][y + 3] = 11;
+				if (test(tab, x + 1, y + 3))	tab[x + 1][y + 3] = 11;
+				if (test(tab, x + 1, y - 3))	tab[x + 1][y - 3] = 11;
+
+
+				tab[x][y] = 5;
+				tab[x][y + 1] = 5;
+				tab[x][y + 2] = 5;
+				tab[x][y - 1] = 5;
+				tab[x][y - 2] = 5;
+			}
+
+			if (statek==3)
+			{
+			
+				if (test(tab, x - 1, y - 1))tab[x - 1][y - 1] = 11;
+				if (test(tab, x - 1, y + 1))tab[x - 1][y + 1] = 11;
+				if (test(tab, x - 1, y - 2))tab[x - 1][y - 2] = 11;
+				if (test(tab, x - 1, y + 2))tab[x - 1][y + 2] = 11;
+				if (test(tab, x - 1, y ))tab[x - 1][y] = 11;
+
+				if (test(tab, x + 1, y - 1))tab[x + 1][y - 1] = 11;
+				if (test(tab, x + 1, y + 1))tab[x + 1][y + 1] = 11;
+				if (test(tab, x + 1, y - 2))tab[x + 1][y - 2] = 11;
+				if (test(tab, x + 1, y + 2))tab[x + 1][y + 2] = 11;
+				if (test(tab, x +1, y ))tab[x + 1][y] = 11;
+
+				if (test(tab, x , y - 2))	tab[x][y - 2] = 11;
+				if (test(tab, x , y + 2))	tab[x][y + 2] = 11;
+
+				tab[x][y] = 3;
+				tab[x][y + 1] = 3;
+				tab[x][y - 1] = 3;
+			}
+			if (statek==1)
+			{
+
+				if (test(tab, x - 1, y - 1)) tab[x - 1][y - 1] = 11; 
+				if (test(tab, x - 1, y + 1)) tab[x - 1][y + 1] = 11; 
+				if (test(tab, x - 1, y)) tab[x - 1][y] = 11; 
+				if (test(tab, x + 1, y - 1))tab[x + 1][y - 1] = 11;
+				if (test(tab, x + 1, y + 1))tab[x + 1][y + 1] = 11;
+				if (test(tab, x + 1, y ))tab[x + 1][y] = 11;
+				if (test(tab, x , y - 1))tab[x][y - 1] = 11;
+				if (test(tab, x , y + 1))tab[x][y + 1] = 11;
+
+				tab[x][y] = 1;
+			}
+
+
+		}
+		if (poziom == 1)
+		{
+			if (statek == 5)
+			{
+				if (test(tab, x, y-1))	tab[x][y - 1] = 11;
+				if (test(tab, x, y+1))	tab[x][y + 1] = 11;
+
+				if (test(tab, x + 1, y-1))	tab[x + 1][y-1] = 11;
+				if (test(tab, x + 1, y+1))	tab[x +1][y+1] = 11;
+
+				if (test(tab, x - 1, y-1))	tab[x -1 ][y-1] = 11;
+				if (test(tab, x - 1, y+1))	tab[x -1][y+1] = 11;
+				
+				if (test(tab, x + 2, y - 1))	tab[x + 2][y - 1] = 11;
+				if (test(tab, x + 2, y + 1))	tab[x + 2][y + 1] = 11;
+
+				if (test(tab, x - 2, y - 1))	tab[x - 2][y - 1] = 11;
+				if (test(tab, x - 2, y + 1))	tab[x - 2][y + 1] = 11;
+
+				if (test(tab, x - 3, y - 1))	tab[x - 3][y - 1] = 11;
+				if (test(tab, x - 3, y + 1))	tab[x - 3][y + 1] = 11;
+
+				if (test(tab, x + 3, y - 1))	tab[x + 3][y - 1] = 11;
+				if (test(tab, x + 3, y + 1))	tab[x + 3][y + 1] = 11;
+
+
+				if (test(tab, x - 3, y ))	tab[x - 3][y] = 11;
+				if (test(tab, x +3, y ))	tab[x +3][y] = 11;
+
+				tab[x][y] = 5;
+				tab[x+1][y] = 5;
+				tab[x-1][y] = 5;
+				tab[x-2][y] = 5;
+				tab[x+2][y] = 5;
+			}
+			if (statek == 3)
+			{
+				if (test(tab, x, y - 1))	tab[x][y - 1] = 11;
+				if (test(tab, x, y + 1))	tab[x][y + 1] = 11;
+
+				if (test(tab, x + 1, y - 1))	tab[x + 1][y - 1] = 11;
+				if (test(tab, x + 1, y + 1))	tab[x + 1][y + 1] = 11;
+
+				if (test(tab, x - 1, y - 1))	tab[x - 1][y - 1] = 11;
+				if (test(tab, x - 1, y + 1))	tab[x - 1][y + 1] = 11;
+
+				if (test(tab, x + 2, y - 1))	tab[x + 2][y - 1] = 11;
+				if (test(tab, x + 2, y + 1))	tab[x + 2][y + 1] = 11;
+
+				if (test(tab, x - 2, y - 1))	tab[x - 2][y - 1] = 11;
+				if (test(tab, x - 2, y + 1))	tab[x - 2][y + 1] = 11;
+
+				if (test(tab, x - 2, y))	tab[x - 2][y] = 11;
+				if (test(tab, x + 2, y))	tab[x + 2][y] = 11;
+
+				tab[x][y] = 3;
+				tab[x+1][y] = 3;
+				tab[x-1][y ] = 3;
+			}
+			if (statek == 1)
+			{
+				if (test(tab, x, y - 1))	tab[x][y - 1] = 11;
+				if (test(tab, x, y + 1))	tab[x][y + 1] = 11;
+
+				if (test(tab, x + 1, y - 1))	tab[x + 1][y - 1] = 11;
+				if (test(tab, x + 1, y + 1))	tab[x + 1][y + 1] = 11;
+
+				if (test(tab, x - 1, y - 1))	tab[x - 1][y - 1] = 11;
+				if (test(tab, x - 1, y + 1))	tab[x - 1][y + 1] = 11;
+
+				if (test(tab, x - 1, y))	tab[x - 1][y] = 11;
+				if (test(tab, x + 1, y))	tab[x + 1][y] = 11;
+				tab[x][y] = 1;
+			}
+		}
+	}
+}
+
+int koniec(int tab[][12],int tab2[][12])
+{
+	int trzy = 0, jeden = 0,piec = 0;
+	int x=0;
+	for(int i=1;i<12;i++)
+		for (int j = 1; j < 12; j++)
+		{
+			if (tab[i][j] == 1)jeden++;
+			if (tab[i][j] == 3)trzy++;
+			if (tab[i][j] == 5)piec++;
+		}
+	
+	for (int i = 0; i<12; i++)
+		for (int j = 0; j < 12; j++)
+		{
+			if (tab2[i][j] == 12)
+				x++;
+		}
+	if ((jeden == 3 && trzy == 6 && piec == 5))
+	{
+		printf("wygrales\n"); return 0;
+	}
+
+	if (x == 14)
+	{
+		printf("przegrales\n"); return 0;
+	}
+		
+	return 1;
+
+}
+
+int strzel(int tab[][12],int x,int y)
+{		
+		if (tab[x][y] == 3 || tab[x][y] == 1 || tab[x][y] == 5)
+			return tab[x][y];
+		else 
+			return 0;
+}
+
+void wyswietl(int tab[12][12])
+{
+	printf("\n \n");
+	for (int i= 0; i < 11; i++)
+	{
+		
+		for (int j = 0; j < 11; j++)
+		{
+			if (tab[i][j] == 12)
+				printf(" X ");
+			else
+			if (tab[i][j] ==11)
+				printf("   ");
+			else
+			if (i == 0 && j == 0)
+				printf("   ");
+			else
+				if (i == 10 && j == 0)
+					printf("%d ", tab[i][j]);
+				else
+				
+				printf(" %d ", tab[i][j]);
+		}
+			printf("\n");
+	}
+}
+
+void uzupelnienie(int tab[12][12])
+{
+	for (int i = 0; i < 11; i++)
+	{
+		for (int j = 0; j < 11; j++)
+		{
+			if (j == 0)
+				tab[i][j] = i;
+			else
+				if (i == 0)
+					tab[i][j] = j;
+				else
+			tab[i][j] = 0;
+		}
+	}
+	for (int i = 0; i < 12; i++)
+	{
+		tab[i][11] = -1;
+		
+	}
+	for (int j = 0; j < 12; j++)
+	{
+		tab[11][j] = -1;
+	}
+
+}
+
+
+
+
+void rozgrywka(int moja_plansza[][12], int wroga_plansza[][12], int podglad[][12])
+{
+	do
+	{
+		printf("nowy tura\n");
+		int x=1, y=1;
+		do
+		{
+			
+			printf("podaj wspolrzedne x y \n");
+			//scanf_s("%d", &y);
+		//scanf_s("%d", &x);
+			
+		} while (x < 0 && x >11 && y<0 && y > 11);
+
+		if (strzel(wroga_plansza, x, y) != 0) podglad[x][y] = strzel(wroga_plansza, x, y);
+		else podglad[x][y] = 11;
+
+		do									//losuje wspolrzedne dla komputera
+		{
+			x = rand() % 11 + 1;
+			y = rand() % 11 + 1;
+		} while (x < 0 && x > 11 && y<0 && y > 11);
+
+		printf("komputer strzela \n");
+
+		if (strzel(moja_plansza, x, y) != 0)
+			moja_plansza[x][y] = 12;
+
+		//system("pause");
+		
+		
+		wyswietl(moja_plansza);
+		wyswietl(podglad);
+		
+		
+		
+
+
+
+
+
+
+
+	} while (koniec(podglad,moja_plansza));
+
+	
+
+
+}
+
+
+
+
+int main()
+
+{
+
+	srand(time(NULL));
+
+	printf("gra w statki\n");
+
+	int wroga_plansza[12][12];
+	int moja_plansza[12][12];
+	int podglad[12][12];
+
+	uzupelnienie(podglad);
+	uzupelnienie(moja_plansza);
+	uzupelnienie(wroga_plansza);
+
+	ustawianie(wroga_plansza);
+	ustawianie(moja_plansza);
+
+	wyswietl(wroga_plansza);
+	
+	
+
+	rozgrywka(moja_plansza, wroga_plansza, podglad);
+
+	system("pause");
+
+}
